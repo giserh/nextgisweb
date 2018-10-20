@@ -14,6 +14,9 @@ define([
             this.inherited(arguments);
             declare.safeMixin(this,options);
 
+            // globe view is disabled by default
+            this.enabled = false;
+
             this.element = domConstruct.create("div", {
                 class: "ol-control ol-unselectable",
                 innerHTML: string.substitute(
@@ -27,13 +30,23 @@ define([
             });
 
             on(this.element, "click", function(){
-                console.log(widget.display.map.olMap);
+                if (!window.Cesium) {
+                    require([ngwConfig.assetUrl + "cesium/Cesium.js"], function () {
+                        widget.ol3d = new olcs.OLCesium({ map: widget.display.map.olMap });
+                        widget.toggle();
+                    });
+                } else { widget.toggle(); }
             });
 
             ol.control.Control.call(this, {
                  element: this.element,
                  target: this.target
             });
+        },
+
+        toggle: function () {
+            this.enabled = !this.enabled;
+            this.ol3d.setEnabled(this.enabled);
         }
     });
 });
